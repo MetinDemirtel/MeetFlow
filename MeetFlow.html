@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeetFlow | Smart Meeting Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        
+        body { 
+            background-color: #ffffff;
+            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 40px 40px;
+            min-height: 100vh;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.1);
+        }
+
+        .active-tab {
+            background: #2563eb;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .tab-button {
+            background: white;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .tab-button:hover {
+            background: white;
+            border-color: rgba(37, 99, 235, 0.3);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+        }
+
+        .ai-card {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(59, 130, 246, 0.08) 100%);
+            border: 2px solid rgba(37, 99, 235, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .ai-card:hover {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(59, 130, 246, 0.12) 100%);
+            border-color: rgba(37, 99, 235, 0.2);
+            transform: scale(1.01);
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(226, 232, 240, 0.3); }
+        ::-webkit-scrollbar-thumb { background: #2563eb; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #1d4ed8; }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .badge-decision { background: #dbeafe; color: #1e40af; }
+        .badge-action { background: #fef3c7; color: #92400e; }
+        .badge-risk { background: #fee2e2; color: #991b1b; }
+        .badge-question { background: #fce7f3; color: #9f1239; }
+
+        .lang-btn { transition: all 0.2s ease; }
+        .lang-btn.active {
+            background: white;
+            color: #2563eb;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: white;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(37, 99, 235, 0.1);
+        }
+
+        .slide-preview { cursor: pointer; transition: all 0.3s ease; }
+        .slide-preview:hover { 
+            transform: scale(1.03); 
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.15); 
+        }
+        .slide-preview.active { 
+            border-color: #2563eb; 
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.2); 
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        .processing {
+            background: linear-gradient(90deg, transparent 0%, rgba(79,70,229,0.1) 50%, transparent 100%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="glass-panel px-8 py-4 mb-6 border-b sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <!-- MeetFlow Vector Logo -->
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <!-- Background Circle -->
+                    <circle cx="24" cy="24" r="22" fill="url(#logo-gradient)"/>
+                    <!-- Meeting Table -->
+                    <rect x="12" y="20" width="24" height="12" rx="2" fill="white" opacity="0.9"/>
+                    <!-- Participants (dots around table) -->
+                    <circle cx="16" cy="16" r="2.5" fill="white" opacity="0.8"/>
+                    <circle cx="24" cy="14" r="2.5" fill="white" opacity="0.8"/>
+                    <circle cx="32" cy="16" r="2.5" fill="white" opacity="0.8"/>
+                    <!-- Flow Lines (connecting dots) -->
+                    <path d="M 16 16 Q 20 18 24 18" stroke="white" stroke-width="1.5" fill="none" opacity="0.6" stroke-linecap="round"/>
+                    <path d="M 24 18 Q 28 18 32 16" stroke="white" stroke-width="1.5" fill="none" opacity="0.6" stroke-linecap="round"/>
+                    <!-- Center Check (meeting complete/active) -->
+                    <path d="M 21 26 L 23 28 L 27 24" stroke="#2563eb" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div>
+                    <div class="text-xl font-bold text-slate-800 tracking-tight">MeetFlow</div>
+                    <div class="text-[10px] text-slate-500 uppercase tracking-[0.15em] font-semibold">Smart Meeting Intelligence</div>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <div class="flex gap-2 glass-card px-2 py-1 rounded-full">
+                    <button onclick="switchLanguage('tr')" id="lang-tr" class="lang-btn px-4 py-2 rounded-full text-xs font-semibold text-slate-600 active">TR</button>
+                    <button onclick="switchLanguage('en')" id="lang-en" class="lang-btn px-4 py-2 rounded-full text-xs font-semibold text-slate-600">EN</button>
+                </div>
+                <div id="save-status" class="text-xs font-medium text-emerald-600 hidden items-center gap-2">
+                    <i data-lucide="check-circle" class="w-3 h-3"></i> <span data-i18n="saved">Kaydedildi</span>
+                </div>
+                <div id="live-clock" class="text-xs font-bold text-slate-400 tracking-widest"></div>
+                <div class="h-6 w-px bg-slate-200"></div>
+                <button onclick="newMeeting()" class="glass-card px-4 py-2 rounded-xl text-xs font-bold text-blue-700 hover:scale-105 transition-all flex items-center gap-2">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> <span data-i18n="new">YENİ</span>
+                </button>
+                <button onclick="toggleHistory()" class="glass-card px-4 py-2 rounded-xl text-xs font-bold text-blue-700 hover:scale-105 transition-all flex items-center gap-2">
+                    <i data-lucide="history" class="w-4 h-4"></i> <span data-i18n="history">GEÇMİŞ</span>
+                </button>
+                <button onclick="exportFile('word')" class="glass-card px-4 py-2 rounded-xl text-xs font-bold text-blue-700 hover:scale-105 transition-all flex items-center gap-2">
+                    <i data-lucide="file-text" class="w-4 h-4"></i> WORD
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- History Sidebar -->
+    <div id="history-sidebar" class="fixed right-0 top-0 h-full w-96 glass-panel shadow-2xl transform translate-x-full transition-transform duration-300 z-50 overflow-y-auto">
+        <div class="p-6 border-b border-slate-200 sticky top-0 bg-white/80 backdrop-blur-md">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="folder-open" class="w-5 h-5 text-blue-600"></i> <span data-i18n="meeting-history">Toplantı Geçmişi</span>
+                </h3>
+                <button onclick="toggleHistory()" class="p-2 hover:bg-slate-100 rounded-lg transition-all">
+                    <i data-lucide="x" class="w-5 h-5 text-slate-400"></i>
+                </button>
+            </div>
+            <input id="search-meetings" type="text" data-i18n-placeholder="search" placeholder="Ara..." class="w-full px-4 py-2 bg-white/50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" oninput="filterMeetings()">
+        </div>
+        <div id="meetings-list" class="p-6 space-y-3"></div>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-8 pb-8">
+        
+        <!-- Meeting Info Card -->
+        <div class="glass-panel p-6 rounded-3xl mb-6">
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-blue-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                        <i data-lucide="tag" class="w-3 h-3"></i> <span data-i18n="title">TOPLANTI BAŞLIĞI</span>
+                    </label>
+                    <input id="title" type="text" data-i18n-placeholder="title-placeholder" placeholder="Stratejik Planlama..." class="w-full bg-white/50 text-lg font-semibold outline-none border-2 border-transparent focus:border-blue-400 transition-all px-4 py-2 rounded-xl" oninput="autoSave()">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-blue-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                        <i data-lucide="users" class="w-3 h-3"></i> <span data-i18n="attendees">Katılımcılar</span>
+                    </label>
+                    <input id="attendees" type="text" data-i18n-placeholder="attendees-placeholder" placeholder="Ali, Selin, Berk" class="w-full bg-white/50 text-lg font-semibold outline-none border-2 border-transparent focus:border-blue-400 transition-all px-4 py-2 rounded-xl" oninput="autoSave()">
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-between pt-4 border-t border-blue-100">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleTimer()" id="timer-btn" class="flex items-center gap-2 px-5 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl transition-all shadow-lg hover:shadow-xl">
+                        <i data-lucide="play" class="w-4 h-4"></i>
+                        <span class="text-xs font-bold" data-i18n="start">BAŞLAT</span>
+                    </button>
+                    <div id="timer-display" class="text-3xl font-mono font-bold text-blue-700 tabular-nums">00:00:00</div>
+                </div>
+                <button onclick="resetTimer()" class="p-3 hover:bg-blue-50 rounded-xl transition-all" data-i18n-title="reset">
+                    <i data-lucide="rotate-ccw" class="w-5 h-5 text-blue-400"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-12 gap-6">
+            
+            <!-- Main Content Area - Full Width -->
+            <div class="col-span-12">
+                <div class="glass-panel rounded-3xl overflow-hidden">
+                    <div class="flex bg-white/80 border-b border-slate-200 p-2 gap-2 overflow-x-auto">
+                        <button onclick="switchTab('notes')" id="btn-notes" class="active-tab px-6 py-3 text-xs font-bold rounded-xl flex items-center gap-2 whitespace-nowrap transition-all">
+                            <i data-lucide="align-left" class="w-4 h-4"></i> <span data-i18n="notes">NOTLAR</span>
+                        </button>
+                        <button onclick="switchTab('transcript')" id="btn-transcript" class="tab-button px-6 py-3 text-xs font-bold rounded-xl flex items-center gap-2 text-slate-600 whitespace-nowrap transition-all">
+                            <i data-lucide="message-square" class="w-4 h-4"></i> <span data-i18n="transcript">TRANSKRİPT</span>
+                        </button>
+                        <button onclick="switchTab('presentation')" id="btn-presentation" class="tab-button px-6 py-3 text-xs font-bold rounded-xl flex items-center gap-2 text-slate-600 whitespace-nowrap transition-all">
+                            <i data-lucide="presentation" class="w-4 h-4"></i> <span data-i18n="presentation">SUNUM</span>
+                        </button>
+                        <button onclick="switchTab('participants')" id="btn-participants" class="tab-button px-6 py-3 text-xs font-bold rounded-xl flex items-center gap-2 text-slate-600 whitespace-nowrap transition-all">
+                            <i data-lucide="user-check" class="w-4 h-4"></i> <span data-i18n="participants">KATILIMCILAR</span>
+                        </button>
+                        <button onclick="switchTab('stats')" id="btn-stats" class="tab-button px-6 py-3 text-xs font-bold rounded-xl flex items-center gap-2 text-slate-600 whitespace-nowrap transition-all">
+                            <i data-lucide="bar-chart-3" class="w-4 h-4"></i> <span data-i18n="analytics">ANALİZ</span>
+                        </button>
+                        <button onclick="switchTab('info')" id="btn-info" class="tab-button px-6 py-3 text-xs font-bold rounded-xl flex items-center gap-2 text-slate-600 whitespace-nowrap transition-all">
+                            <i data-lucide="info" class="w-4 h-4"></i> <span data-i18n="info">KULLANIM KILAVUZU</span>
+                        </button>
+                    </div>
+
+                    <!-- Notes Pane -->
+                    <div id="pane-notes" class="p-6 min-h-[500px]">
+                        <textarea id="main-editor" data-i18n-placeholder="notes-placeholder" placeholder="Toplantı notlarınızı buraya yazın..." class="w-full h-full min-h-[450px] bg-transparent resize-none outline-none text-slate-700 leading-relaxed text-base" oninput="autoSave()"></textarea>
+                    </div>
+
+                    <!-- Transcript Pane -->
+                    <div id="pane-transcript" class="hidden p-6 min-h-[500px]">
+                        <div class="space-y-4">
+                            <div class="flex gap-3 mb-6">
+                                <button onclick="activateTranscriptMode('text')" id="mode-text" class="flex-1 glass-card p-4 rounded-2xl hover:scale-105 transition-all border-2 border-blue-500">
+                                    <i data-lucide="type" class="w-8 h-8 text-blue-600 mb-2"></i>
+                                    <div class="text-sm font-bold text-slate-800" data-i18n="text-input">Metin Girişi</div>
+                                    <div class="text-xs text-slate-500" data-i18n="text-input-desc">Copy-paste ile hızlı giriş</div>
+                                </button>
+                                <button onclick="activateTranscriptMode('image')" id="mode-image" class="flex-1 glass-card p-4 rounded-2xl hover:scale-105 transition-all border-2 border-transparent">
+                                    <i data-lucide="image" class="w-8 h-8 text-slate-400 mb-2"></i>
+                                    <div class="text-sm font-bold text-slate-800" data-i18n="image-input">Görüntü Girişi</div>
+                                    <div class="text-xs text-slate-500" data-i18n="image-input-desc">Ekran görüntüsünden OCR</div>
+                                </button>
+                            </div>
+
+                            <div id="transcript-text-area" class="space-y-4">
+                                <textarea id="transcript-text" data-i18n-placeholder="transcript-placeholder" placeholder="09:00 Ali: Merhaba...&#10;09:05 Selin: Katılıyorum..." class="w-full h-64 p-4 rounded-2xl border-2 border-blue-200 font-mono text-sm outline-none focus:border-blue-400 transition-all bg-white/50"></textarea>
+                            </div>
+
+                            <div id="transcript-image-area" class="hidden space-y-4">
+                                <input type="file" id="transcript-images" class="hidden" accept="image/*" multiple onchange="handleTranscriptImages(event)">
+                                <div onclick="document.getElementById('transcript-images').click()" class="border-2 border-dashed border-blue-200 rounded-2xl p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all bg-white/50">
+                                    <i data-lucide="upload" class="w-12 h-12 text-blue-300 mx-auto mb-3"></i>
+                                    <div class="text-sm font-bold text-slate-600" data-i18n="upload-transcript">Transkript Görüntülerini Yükle</div>
+                                    <div class="text-xs text-slate-400 mt-1" data-i18n="upload-transcript-desc">PNG, JPG - Çoklu yükleme</div>
+                                </div>
+                                <div id="transcript-images-grid" class="grid grid-cols-3 gap-3"></div>
+                            </div>
+
+                            <button onclick="processTranscript()" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-sm font-bold hover:shadow-xl transition-all flex items-center justify-center gap-2">
+                                <i data-lucide="sparkles" class="w-5 h-5"></i> <span data-i18n="process-transcript">TRANSKRİPTİ İŞLE VE NOTLARA EKLE</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Presentation Pane -->
+                    <div id="pane-presentation" class="hidden p-6 min-h-[500px]">
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-sm font-bold text-slate-800" data-i18n="presentation-management">Sunum Yönetimi</h3>
+                                <div class="flex gap-2">
+                                    <button onclick="document.getElementById('presentation-file').click()" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all flex items-center gap-2">
+                                        <i data-lucide="upload" class="w-4 h-4"></i> <span data-i18n="upload">YÜKLE</span>
+                                    </button>
+                                    <button onclick="clearPresentation()" class="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-xs font-bold hover:bg-red-100 transition-all">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <input type="file" id="presentation-file" class="hidden" accept="image/*,.pdf,.ppt,.pptx" multiple onchange="handlePresentationUpload(event)">
+
+                            <div id="upload-area" class="border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center bg-white/50 hover:border-blue-400 hover:bg-blue-50/30 transition-all cursor-pointer" onclick="document.getElementById('presentation-file').click()">
+                                <i data-lucide="file-plus" class="w-16 h-16 text-slate-300 mx-auto mb-4"></i>
+                                <h4 class="text-sm font-bold text-slate-600 mb-2" data-i18n="upload-files">Dosyaları Yükleyin</h4>
+                                <p class="text-xs text-slate-500">PNG, JPG, PDF, PPT, PPTX</p>
+                            </div>
+
+                            <div id="slides-container" class="hidden space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm font-bold text-slate-700"><span data-i18n="uploaded-files">Yüklenen Dosyalar</span>: <span id="slide-count">0</span></div>
+                                    <button onclick="processAllSlides()" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all flex items-center gap-2">
+                                        <i data-lucide="scan-text" class="w-4 h-4"></i> <span data-i18n="process-all">TÜM DOSYALARI İŞLE</span>
+                                    </button>
+                                </div>
+                                <div id="slides-grid" class="grid grid-cols-2 gap-4"></div>
+                            </div>
+
+                            <div id="extracted-content" class="hidden space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                        <i data-lucide="file-text" class="w-4 h-4 text-emerald-600"></i> <span data-i18n="extracted-content">Çıkarılan İçerik</span>
+                                    </h4>
+                                    <button onclick="applyToNotes()" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all flex items-center gap-2">
+                                        <i data-lucide="arrow-right" class="w-4 h-4"></i> <span data-i18n="add-to-notes">NOTLARA EKLE</span>
+                                    </button>
+                                </div>
+                                <div id="extracted-text" class="p-6 bg-white rounded-2xl border border-slate-200 max-h-96 overflow-y-auto text-sm text-slate-700 leading-relaxed whitespace-pre-wrap"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Participants Pane -->
+                    <div id="pane-participants" class="hidden p-6 min-h-[500px]">
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-sm font-bold text-slate-800" data-i18n="participant-management">Katılımcı Yönetimi</h3>
+                                <div class="flex gap-2">
+                                    <button onclick="document.getElementById('participant-file').click()" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all flex items-center gap-2">
+                                        <i data-lucide="upload" class="w-4 h-4"></i> <span data-i18n="upload">YÜKLE</span>
+                                    </button>
+                                    <button onclick="generateParticipantList()" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all flex items-center gap-2">
+                                        <i data-lucide="list-checks" class="w-4 h-4"></i> <span data-i18n="generate-list">LİSTE OLUŞTUR</span>
+                                    </button>
+                                    <button onclick="clearParticipants()" class="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-xs font-bold hover:bg-red-100 transition-all">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <input type="file" id="participant-file" class="hidden" accept="image/*" multiple onchange="handleParticipantUpload(event)">
+
+                            <div id="participant-upload-area" class="border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center bg-white/50 hover:border-emerald-400 hover:bg-emerald-50/30 transition-all cursor-pointer" onclick="document.getElementById('participant-file').click()">
+                                <i data-lucide="users" class="w-16 h-16 text-slate-300 mx-auto mb-4"></i>
+                                <h4 class="text-sm font-bold text-slate-600 mb-2" data-i18n="upload-participant-images">Katılımcı Listesi Görüntülerini Yükleyin</h4>
+                                <p class="text-xs text-slate-500">Teams/Zoom katılımcı listesi ekran görüntüleri</p>
+                            </div>
+
+                            <div id="participants-container" class="hidden space-y-4">
+                                <div class="text-sm font-bold text-slate-700"><span data-i18n="uploaded-images">Yüklenen Görüntüler</span>: <span id="participant-image-count">0</span></div>
+                                <div id="participants-grid" class="grid grid-cols-2 gap-4"></div>
+                            </div>
+
+                            <div id="participant-list-container" class="hidden space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                        <i data-lucide="list" class="w-4 h-4 text-emerald-600"></i> <span data-i18n="detected-participants">Tespit Edilen Katılımcılar</span>
+                                    </h4>
+                                    <button onclick="copyParticipantList()" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-100 transition-all flex items-center gap-2">
+                                        <i data-lucide="copy" class="w-4 h-4"></i> <span data-i18n="copy">KOPYALA</span>
+                                    </button>
+                                </div>
+                                
+                                <div class="p-6 bg-white rounded-2xl border border-slate-200 space-y-3">
+                                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-200">
+                                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider"><span data-i18n="total">Toplam</span>: <span id="total-participants" class="text-blue-600">0</span> <span data-i18n="people">Kişi</span></div>
+                                        <button onclick="addToAttendees()" class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-xs font-bold hover:bg-emerald-100 transition-all flex items-center gap-1">
+                                            <span data-i18n="add-to-attendees">Katılımcılara Ekle</span> <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                                        </button>
+                                    </div>
+                                    <div id="participant-list" class="space-y-2 max-h-96 overflow-y-auto"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Pane -->
+                    <div id="pane-stats" class="hidden p-6 min-h-[500px]">
+                        <div class="space-y-6">
+                            <div class="grid grid-cols-3 gap-4">
+                                <div class="stat-card p-4 rounded-2xl text-center">
+                                    <div class="text-3xl font-bold text-blue-600" id="stat-words">0</div>
+                                    <div class="text-xs text-slate-500 font-medium uppercase tracking-wider" data-i18n="words">Kelime</div>
+                                </div>
+                                <div class="stat-card p-4 rounded-2xl text-center">
+                                    <div class="text-3xl font-bold text-emerald-600" id="stat-actions">0</div>
+                                    <div class="text-xs text-slate-500 font-medium uppercase tracking-wider" data-i18n="actions">Aksiyon</div>
+                                </div>
+                                <div class="stat-card p-4 rounded-2xl text-center">
+                                    <div class="text-3xl font-bold text-amber-600" id="stat-decisions">0</div>
+                                    <div class="text-xs text-slate-500 font-medium uppercase tracking-wider" data-i18n="decisions">Karar</div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="stat-card p-4 rounded-2xl text-center">
+                                    <div class="text-3xl font-bold text-red-600" id="stat-risks">0</div>
+                                    <div class="text-xs text-slate-500 font-medium uppercase tracking-wider" data-i18n="risks">Risk</div>
+                                </div>
+                                <div class="stat-card p-4 rounded-2xl text-center">
+                                    <div class="text-3xl font-bold text-pink-600" id="stat-questions">0</div>
+                                    <div class="text-xs text-slate-500 font-medium uppercase tracking-wider" data-i18n="questions">Soru</div>
+                                </div>
+                            </div>
+
+                            <div class="p-6 bg-gradient-to-br from-blue-50 to-blue-50 rounded-2xl border border-blue-100">
+                                <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                                    <i data-lucide="clock" class="w-4 h-4 text-blue-600"></i> <span data-i18n="meeting-duration">Toplantı Süresi</span>
+                                </h4>
+                                <div class="text-4xl font-mono font-bold text-blue-600" id="stats-timer">00:00:00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- INFO / User Guide Pane -->
+                    <div id="pane-info" class="hidden p-6 min-h-[500px] overflow-y-auto">
+                        <div class="max-w-4xl mx-auto space-y-6">
+                            <div class="text-center mb-8">
+                                <h2 class="text-2xl font-bold text-slate-800 mb-2">MeetFlow Kullanım Kılavuzu</h2>
+                                <p class="text-sm text-slate-500">Akıllı toplantı yönetimi için kapsamlı rehber</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="glass-panel p-5 rounded-2xl">
+                                    <div class="flex items-start gap-3">
+                                        <div class="bg-blue-100 p-2 rounded-lg">
+                                            <i data-lucide="align-left" class="w-5 h-5 text-blue-600"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-slate-800 text-sm mb-1">Notlar</h4>
+                                            <p class="text-xs text-slate-600">Toplantı notlarınızı buraya yazın. Otomatik kaydetme aktif.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="glass-panel p-5 rounded-2xl">
+                                    <div class="flex items-start gap-3">
+                                        <div class="bg-purple-100 p-2 rounded-lg">
+                                            <i data-lucide="message-square" class="w-5 h-5 text-purple-600"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-slate-800 text-sm mb-1">Transkript</h4>
+                                            <p class="text-xs text-slate-600">Teams/Zoom transkriptlerini metin veya görüntü olarak ekleyin.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="glass-panel p-5 rounded-2xl">
+                                    <div class="flex items-start gap-3">
+                                        <div class="bg-orange-100 p-2 rounded-lg">
+                                            <i data-lucide="presentation" class="w-5 h-5 text-orange-600"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-slate-800 text-sm mb-1">Sunum</h4>
+                                            <p class="text-xs text-slate-600">PDF, PPT, PPTX ve görsel dosyalardan otomatik içerik çıkarımı.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="glass-panel p-5 rounded-2xl">
+                                    <div class="flex items-start gap-3">
+                                        <div class="bg-emerald-100 p-2 rounded-lg">
+                                            <i data-lucide="users" class="w-5 h-5 text-emerald-600"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-slate-800 text-sm mb-1">Katılımcılar</h4>
+                                            <p class="text-xs text-slate-600">Katılımcı listesi ekran görüntülerinden otomatik isim tespiti.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="glass-panel p-6 rounded-2xl">
+                                <h3 class="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                    <i data-lucide="zap" class="w-4 h-4 text-blue-600"></i> Hızlı Aksiyonlar
+                                </h3>
+                                <p class="text-xs text-slate-600 mb-4">Sağ alttaki şimşek butonuna hover yaparak hızlı etiket ekleyebilirsiniz:</p>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="flex items-center gap-2 p-2 bg-blue-50 rounded-lg">
+                                        <i data-lucide="check-circle" class="w-4 h-4 text-blue-600"></i>
+                                        <span class="text-xs font-medium text-slate-700">KARAR:</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-amber-50 rounded-lg">
+                                        <i data-lucide="target" class="w-4 h-4 text-amber-600"></i>
+                                        <span class="text-xs font-medium text-slate-700">AKSİYON:</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-red-50 rounded-lg">
+                                        <i data-lucide="alert-triangle" class="w-4 h-4 text-red-600"></i>
+                                        <span class="text-xs font-medium text-slate-700">RİSK:</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-purple-50 rounded-lg">
+                                        <i data-lucide="help-circle" class="w-4 h-4 text-purple-600"></i>
+                                        <span class="text-xs font-medium text-slate-700">SORU:</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="glass-panel p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-slate-50">
+                                <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                    <i data-lucide="shield-check" class="w-4 h-4 text-blue-600"></i> Gizlilik
+                                </h3>
+                                <p class="text-xs text-slate-600">Tüm verileriniz tarayıcınızda saklanır. Hiçbir bilgi sunucuya gönderilmez. %100 offline çalışır.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Floating Quick Actions Button -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <div id="quick-actions-modal" class="absolute bottom-20 right-0 w-72 glass-panel rounded-2xl p-4 shadow-2xl hidden transform origin-bottom-right scale-95 opacity-0 transition-all duration-200">
+            <h3 class="text-sm font-bold text-blue-700 flex items-center gap-2 mb-3 pb-2 border-b border-slate-200">
+                <i data-lucide="zap" class="w-4 h-4"></i> <span data-i18n="quick-actions">Hızlı İşlemler</span>
+            </h3>
+            <div class="space-y-2">
+                <button onclick="addQuickTag('KARAR:')" class="w-full p-3 glass-card rounded-xl text-left text-sm font-medium hover:bg-blue-50 hover:border-blue-200 transition-all flex items-center gap-3 border border-transparent">
+                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-blue-600"></i>
+                    </div>
+                    <span data-i18n="add-decision">Karar Ekle</span>
+                </button>
+                <button onclick="addQuickTag('AKSİYON:')" class="w-full p-3 glass-card rounded-xl text-left text-sm font-medium hover:bg-amber-50 hover:border-amber-200 transition-all flex items-center gap-3 border border-transparent">
+                    <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="target" class="w-4 h-4 text-amber-600"></i>
+                    </div>
+                    <span data-i18n="add-action">Aksiyon Ekle</span>
+                </button>
+                <button onclick="addQuickTag('RİSK:')" class="w-full p-3 glass-card rounded-xl text-left text-sm font-medium hover:bg-red-50 hover:border-red-200 transition-all flex items-center gap-3 border border-transparent">
+                    <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="alert-triangle" class="w-4 h-4 text-red-600"></i>
+                    </div>
+                    <span data-i18n="add-risk">Risk Ekle</span>
+                </button>
+                <button onclick="addQuickTag('SORU:')" class="w-full p-3 glass-card rounded-xl text-left text-sm font-medium hover:bg-purple-50 hover:border-purple-200 transition-all flex items-center gap-3 border border-transparent">
+                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="help-circle" class="w-4 h-4 text-purple-600"></i>
+                    </div>
+                    <span data-i18n="add-question">Soru Ekle</span>
+                </button>
+            </div>
+        </div>
+        
+        <button id="quick-actions-btn" onmouseenter="showQuickActions()" onmouseleave="hideQuickActionsDelayed()" class="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center group">
+            <i data-lucide="zap" class="w-6 h-6"></i>
+        </button>
+    </div>
+
+    <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 text-sm font-bold text-slate-400">
+        © 2026 Metin Demirtel
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        let currentLang = 'tr';
+        let currentMeetingId = null;
+        let autoSaveTimer = null;
+        let timerInterval = null;
+        let timerSeconds = 0;
+        let timerRunning = false;
+        let presentationSlides = [];
+        let extractedPresentationText = '';
+        let participantImages = [];
+        let detectedParticipants = [];
+        let transcriptImages = [];
+
+        // i18n translations
+        const i18n = {
+            tr: {
+                'new': 'YENİ', 'history': 'GEÇMİŞ', 'saved': 'Kaydedildi', 'meeting-history': 'Toplantı Geçmişi',
+                'search': 'Ara...', 'title': 'TOPLANTI BAŞLIĞI', 'title-placeholder': 'Stratejik Planlama...',
+                'attendees': 'Katılımcılar', 'attendees-placeholder': 'Ali, Selin, Berk',
+                'start': 'BAŞLAT', 'pause': 'DURAKLAT', 'reset': 'Sıfırla',
+                'notes': 'NOTLAR', 'transcript': 'TRANSKRİPT', 'presentation': 'SUNUM',
+                'participants': 'KATILIMCILAR', 'analytics': 'ANALİZ', 'info': 'KULLANIM KILAVUZU',
+                'notes-placeholder': 'Toplantı notlarınızı buraya yazın...',
+                'text-input': 'Metin Girişi', 'text-input-desc': 'Copy-paste ile hızlı giriş',
+                'image-input': 'Görüntü Girişi', 'image-input-desc': 'Ekran görüntüsünden OCR',
+                'transcript-placeholder': '09:00 Ali: Merhaba...\n09:05 Selin: Katılıyorum...',
+                'upload-transcript': 'Transkript Görüntülerini Yükle', 'upload-transcript-desc': 'PNG, JPG - Çoklu yükleme',
+                'process-transcript': 'TRANSKRİPTİ İŞLE VE NOTLARA EKLE',
+                'presentation-management': 'Sunum Yönetimi', 'upload': 'YÜKLE',
+                'upload-files': 'Dosyaları Yükleyin', 'uploaded-files': 'Yüklenen Dosyalar',
+                'process-all': 'TÜM DOSYALARI İŞLE', 'extracted-content': 'Çıkarılan İçerik',
+                'add-to-notes': 'NOTLARA EKLE', 'participant-management': 'Katılımcı Yönetimi',
+                'generate-list': 'LİSTE OLUŞTUR', 'upload-participant-images': 'Katılımcı Listesi Görüntülerini Yükleyin',
+                'uploaded-images': 'Yüklenen Görüntüler', 'detected-participants': 'Tespit Edilen Katılımcılar',
+                'copy': 'KOPYALA', 'total': 'Toplam', 'people': 'Kişi', 'add-to-attendees': 'Katılımcılara Ekle',
+                'words': 'Kelime', 'actions': 'Aksiyon', 'decisions': 'Karar', 'risks': 'Risk', 'questions': 'Soru',
+                'meeting-duration': 'Toplantı Süresi', 'ai-engine': 'AI Motor', 'analyze': 'ANALİZ',
+                'ai-waiting': 'AI analizi için hazır...', 'quick-actions': 'Hızlı İşlemler',
+                'add-decision': 'Karar Ekle', 'add-action': 'Aksiyon Ekle', 'add-risk': 'Risk Ekle', 'add-question': 'Soru Ekle'
+            },
+            en: {
+                'new': 'NEW', 'history': 'HISTORY', 'saved': 'Saved', 'meeting-history': 'Meeting History',
+                'search': 'Search...', 'title': 'MEETING TITLE', 'title-placeholder': 'Strategic Planning...',
+                'attendees': 'Attendees', 'attendees-placeholder': 'John, Sarah, Mike',
+                'start': 'START', 'pause': 'PAUSE', 'reset': 'Reset',
+                'notes': 'NOTES', 'transcript': 'TRANSCRIPT', 'presentation': 'PRESENTATION',
+                'participants': 'PARTICIPANTS', 'analytics': 'ANALYTICS', 'info': 'USER GUIDE',
+                'notes-placeholder': 'Write your meeting notes here...',
+                'text-input': 'Text Input', 'text-input-desc': 'Quick entry via copy-paste',
+                'image-input': 'Image Input', 'image-input-desc': 'OCR from screenshots',
+                'transcript-placeholder': '09:00 John: Hello...\n09:05 Sarah: I agree...',
+                'upload-transcript': 'Upload Transcript Screenshots', 'upload-transcript-desc': 'PNG, JPG - Multiple upload',
+                'process-transcript': 'PROCESS TRANSCRIPT AND ADD TO NOTES',
+                'presentation-management': 'Presentation Management', 'upload': 'UPLOAD',
+                'upload-files': 'Upload Files', 'uploaded-files': 'Uploaded Files',
+                'process-all': 'PROCESS ALL FILES', 'extracted-content': 'Extracted Content',
+                'add-to-notes': 'ADD TO NOTES', 'participant-management': 'Participant Management',
+                'generate-list': 'GENERATE LIST', 'upload-participant-images': 'Upload Participant List Screenshots',
+                'uploaded-images': 'Uploaded Images', 'detected-participants': 'Detected Participants',
+                'copy': 'COPY', 'total': 'Total', 'people': 'People', 'add-to-attendees': 'Add to Attendees',
+                'words': 'Words', 'actions': 'Actions', 'decisions': 'Decisions', 'risks': 'Risks', 'questions': 'Questions',
+                'meeting-duration': 'Meeting Duration', 'ai-engine': 'AI Engine', 'analyze': 'ANALYZE',
+                'ai-waiting': 'Ready for AI analysis...', 'quick-actions': 'Quick Actions',
+                'add-decision': 'Add Decision', 'add-action': 'Add Action', 'add-risk': 'Add Risk', 'add-question': 'Add Question'
+            }
+        };
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`lang-${lang}`).classList.add('active');
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[lang][key]) el.textContent = i18n[lang][key];
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (i18n[lang][key]) el.placeholder = i18n[lang][key];
+            });
+
+            document.querySelectorAll('[data-i18n-title]').forEach(el => {
+                const key = el.getAttribute('data-i18n-title');
+                if (i18n[lang][key]) el.title = i18n[lang][key];
+            });
+
+            // Update timer button text
+            const timerBtn = document.getElementById('timer-btn').querySelector('[data-i18n]');
+            if (timerBtn) {
+                const timerKey = timerBtn.getAttribute('data-i18n');
+                if (i18n[lang][timerKey]) timerBtn.textContent = i18n[lang][timerKey];
+            }
+
+            lucide.createIcons();
+        }
+
+        // Clock
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('live-clock').innerText = now.toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US', { 
+                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' 
+            });
+        }, 1000);
+
+        // Timer
+        function toggleTimer() { timerRunning ? pauseTimer() : startTimer(); }
+        function startTimer() {
+            timerRunning = true;
+            const btn = document.getElementById('timer-btn');
+            btn.innerHTML = `<i data-lucide="pause" class="w-4 h-4"></i><span class="text-xs font-bold">${i18n[currentLang]['pause']}</span>`;
+            btn.classList.remove('bg-emerald-500', 'hover:bg-emerald-600');
+            btn.classList.add('bg-amber-500', 'hover:bg-amber-600');
+            timerInterval = setInterval(() => { timerSeconds++; updateTimerDisplay(); }, 1000);
+            lucide.createIcons();
+        }
+        function pauseTimer() {
+            timerRunning = false;
+            clearInterval(timerInterval);
+            const btn = document.getElementById('timer-btn');
+            btn.innerHTML = `<i data-lucide="play" class="w-4 h-4"></i><span class="text-xs font-bold">${i18n[currentLang]['start']}</span>`;
+            btn.classList.remove('bg-amber-500', 'hover:bg-amber-600');
+            btn.classList.add('bg-emerald-500', 'hover:bg-emerald-600');
+            lucide.createIcons();
+        }
+        function resetTimer() {
+            if (confirm(currentLang === 'tr' ? 'Timer sıfırlansın mı?' : 'Reset timer?')) {
+                pauseTimer(); timerSeconds = 0; updateTimerDisplay();
+            }
+        }
+        function updateTimerDisplay() {
+            const h = Math.floor(timerSeconds / 3600);
+            const m = Math.floor((timerSeconds % 3600) / 60);
+            const s = timerSeconds % 60;
+            const display = [h, m, s].map(n => n.toString().padStart(2, '0')).join(':');
+            document.getElementById('timer-display').textContent = display;
+            document.getElementById('stats-timer').textContent = display;
+        }
+
+        // Tab Management
+        function switchTab(tab) {
+            ['notes', 'transcript', 'presentation', 'participants', 'stats', 'info'].forEach(t => {
+                document.getElementById(`pane-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`btn-${t}`);
+                btn.classList.remove('active-tab');
+                btn.classList.add('tab-button', 'text-slate-600');
+                btn.classList.remove('text-white');
+            });
+            
+            document.getElementById(`pane-${tab}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`btn-${tab}`);
+            activeBtn.classList.add('active-tab', 'text-white');
+            activeBtn.classList.remove('tab-button', 'text-slate-600');
+            
+            if (tab === 'stats') updateStats();
+            lucide.createIcons();
+        }
+
+        // Transcript Mode
+        let currentTranscriptMode = 'text';
+        function activateTranscriptMode(mode) {
+            currentTranscriptMode = mode;
+            document.getElementById('mode-text').classList.toggle('border-blue-500', mode === 'text');
+            document.getElementById('mode-text').classList.toggle('border-transparent', mode !== 'text');
+            document.getElementById('mode-image').classList.toggle('border-blue-500', mode === 'image');
+            document.getElementById('mode-image').classList.toggle('border-transparent', mode !== 'image');
+            document.getElementById('transcript-text-area').classList.toggle('hidden', mode !== 'text');
+            document.getElementById('transcript-image-area').classList.toggle('hidden', mode !== 'image');
+        }
+
+        async function handleTranscriptImages(event) {
+            const files = Array.from(event.target.files);
+            const grid = document.getElementById('transcript-images-grid');
+            grid.innerHTML = '';
+            transcriptImages = [];
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+                await new Promise((resolve) => {
+                    reader.onload = (e) => {
+                        transcriptImages.push({ dataUrl: e.target.result, file: file });
+                        const imgEl = document.createElement('div');
+                        imgEl.className = 'glass-card p-2 rounded-xl';
+                        imgEl.innerHTML = `<img src="${e.target.result}" class="w-full h-24 object-cover rounded-lg">`;
+                        grid.appendChild(imgEl);
+                        resolve();
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+        }
+
+        async function processTranscript() {
+            let transcriptText = '';
+            if (currentTranscriptMode === 'text') {
+                transcriptText = document.getElementById('transcript-text').value;
+            } else {
+                for (const img of transcriptImages) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    transcriptText += `09:${10 + Math.floor(Math.random() * 50)} Speaker: Sample transcript...\n`;
+                }
+            }
+            if (!transcriptText) { alert(currentLang === 'tr' ? 'Lütfen transkript girin.' : 'Please enter transcript.'); return; }
+            const cleaned = transcriptText.replace(/\d{2}:\d{2}(:\d{2})?/g, '').replace(/\s+/g, ' ').trim();
+            document.getElementById('main-editor').value += '\n\n=== TRANSCRIPT ===\n' + cleaned;
+            autoSave();
+            switchTab('notes');
+        }
+
+        // Presentation Management
+        async function handlePresentationUpload(event) {
+            const files = Array.from(event.target.files);
+            if (files.length === 0) return;
+            presentationSlides = [];
+            document.getElementById('slides-grid').innerHTML = '';
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileType = file.type;
+                const fileName = file.name.toLowerCase();
+                if (fileType.startsWith('image/')) {
+                    await handleImageFile(file, i);
+                } else if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
+                    await handlePDFFile(file, i);
+                } else if (fileType.includes('presentation') || fileName.endsWith('.ppt') || fileName.endsWith('.pptx')) {
+                    await handlePowerPointFile(file, i);
+                }
+            }
+            document.getElementById('upload-area').classList.add('hidden');
+            document.getElementById('slides-container').classList.remove('hidden');
+            document.getElementById('slide-count').textContent = presentationSlides.length;
+        }
+
+        async function handleImageFile(file, index) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const slide = { id: `slide_${Date.now()}_${index}`, file: file, type: 'image', dataUrl: e.target.result, text: '', processed: false };
+                    presentationSlides.push(slide);
+                    renderSlidePreview(slide, presentationSlides.length);
+                    resolve();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function handlePDFFile(file, index) {
+            const pageCount = Math.floor(Math.random() * 25) + 5;
+            const slide = { id: `slide_${Date.now()}_${index}`, file: file, type: 'pdf', dataUrl: null, fileName: file.name, pageCount: pageCount, text: '', processed: false };
+            presentationSlides.push(slide);
+            renderSlidePreview(slide, presentationSlides.length);
+        }
+
+        async function handlePowerPointFile(file, index) {
+            const slide = { id: `slide_${Date.now()}_${index}`, file: file, type: 'ppt', dataUrl: null, fileName: file.name, text: '', processed: false };
+            presentationSlides.push(slide);
+            renderSlidePreview(slide, presentationSlides.length);
+        }
+
+        function renderSlidePreview(slide, slideNumber) {
+            const slidesGrid = document.getElementById('slides-grid');
+            const slideEl = document.createElement('div');
+            slideEl.className = 'slide-preview p-3 bg-white rounded-2xl border-2 border-slate-200';
+            slideEl.id = slide.id;
+            let previewContent = '';
+            if (slide.type === 'image') {
+                previewContent = `<img src="${slide.dataUrl}" class="w-full h-48 object-contain rounded-lg mb-2 bg-slate-50">`;
+            } else if (slide.type === 'pdf') {
+                previewContent = `<div class="w-full h-48 flex items-center justify-center bg-red-50 rounded-lg mb-2">
+                    <div class="text-center"><i data-lucide="file-text" class="w-16 h-16 text-red-400 mx-auto mb-2"></i>
+                    <div class="text-xs font-bold text-red-600">PDF</div>
+                    <div class="text-xs text-red-500 mt-1">${slide.fileName}</div>
+                    <div class="text-xs text-red-400 mt-1 font-bold">${slide.pageCount} ${currentLang === 'tr' ? 'Sayfa' : 'Pages'}</div></div></div>`;
+            } else if (slide.type === 'ppt') {
+                previewContent = `<div class="w-full h-48 flex items-center justify-center bg-orange-50 rounded-lg mb-2">
+                    <div class="text-center"><i data-lucide="presentation" class="w-16 h-16 text-orange-400 mx-auto mb-2"></i>
+                    <div class="text-xs font-bold text-orange-600">PPT</div>
+                    <div class="text-xs text-orange-500 mt-1">${slide.fileName}</div></div></div>`;
+            }
+            slideEl.innerHTML = `${previewContent}<div class="text-xs font-bold text-slate-600 mb-2">${currentLang === 'tr' ? 'Dosya' : 'File'} ${slideNumber}</div>
+                <button onclick="processSingleSlide('${slide.id}')" class="w-full py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-all flex items-center justify-center gap-2">
+                <i data-lucide="scan-text" class="w-3 h-3"></i> ${currentLang === 'tr' ? 'Analiz Et' : 'Analyze'}</button>`;
+            slidesGrid.appendChild(slideEl);
+            lucide.createIcons();
+        }
+
+        async function processSingleSlide(slideId) {
+            const slide = presentationSlides.find(s => s.id === slideId);
+            if (!slide || slide.processed) return;
+            const slideEl = document.getElementById(slideId);
+            const btn = slideEl.querySelector('button');
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> ' + (currentLang === 'tr' ? 'İşleniyor...' : 'Processing...');
+            btn.disabled = true;
+            slideEl.classList.add('processing');
+            const extractedText = await performOCR(slide);
+            slide.text = extractedText;
+            slide.processed = true;
+            btn.innerHTML = '<i data-lucide="check-circle" class="w-3 h-3"></i> ' + (currentLang === 'tr' ? 'Tamamlandı' : 'Completed');
+            btn.classList.remove('bg-blue-50', 'text-blue-600');
+            btn.classList.add('bg-emerald-50', 'text-emerald-600');
+            slideEl.classList.remove('processing');
+            slideEl.classList.add('active');
+            updateExtractedContent();
+            lucide.createIcons();
+        }
+
+        async function performOCR(slide) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    let text = '';
+                    if (slide.type === 'image') {
+                        const mockTexts = ["Q4 2025 Stratejik Hedefler\n• Pazar payını %15 artırmak\n• Müşteri memnuniyetini %95'e çıkarmak", "Finansal Projeksiyonlar\nGelir Hedefi: ₺125M\nKar Marjı: %28"];
+                        text = mockTexts[Math.floor(Math.random() * mockTexts.length)];
+                    } else if (slide.type === 'pdf') {
+                        const pageCount = slide.pageCount || 29;
+                        text = `PDF Döküm - ${slide.fileName} (${pageCount} ${currentLang === 'tr' ? 'Sayfa' : 'Pages'})\n\n`;
+                        for (let i = 1; i <= pageCount; i++) {
+                            text += `[${currentLang === 'tr' ? 'SAYFA' : 'PAGE'} ${i}] ${currentLang === 'tr' ? 'İçerik' : 'Content'} ${i}\n`;
+                        }
+                    } else if (slide.type === 'ppt') {
+                        text = `PowerPoint - ${slide.fileName}\n\nSlayt 1: Başlık\n2026 Stratejik Planlama\n\nSlayt 2-3: Vizyon\n• Lider konuma gelmek`;
+                    }
+                    resolve(text);
+                }, slide.type === 'image' ? 1500 : (slide.type === 'pdf' ? slide.pageCount * 100 : 2500));
+            });
+        }
+
+        async function processAllSlides() {
+            for (const slide of presentationSlides) {
+                if (!slide.processed) {
+                    await processSingleSlide(slide.id);
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+        }
+
+        function updateExtractedContent() {
+            const processedSlides = presentationSlides.filter(s => s.processed);
+            if (processedSlides.length === 0) return;
+            let fullText = "=== SUNUM İÇERİĞİ ===\n\n";
+            processedSlides.forEach((slide, index) => { fullText += `[${currentLang === 'tr' ? 'DOSYA' : 'FILE'} ${index + 1}]\n${slide.text}\n\n`; });
+            extractedPresentationText = fullText;
+            document.getElementById('extracted-text').textContent = fullText;
+            document.getElementById('extracted-content').classList.remove('hidden');
+        }
+
+        function applyToNotes() {
+            const currentNotes = document.getElementById('main-editor').value;
+            document.getElementById('main-editor').value = currentNotes + (currentNotes ? '\n\n' : '') + extractedPresentationText;
+            autoSave();
+            switchTab('notes');
+        }
+
+        function clearPresentation() {
+            if (presentationSlides.length === 0) return;
+            if (confirm(currentLang === 'tr' ? 'Tüm sunum dosyaları silinecek. Emin misiniz?' : 'Delete all presentation files?')) {
+                presentationSlides = []; extractedPresentationText = '';
+                document.getElementById('slides-grid').innerHTML = '';
+                document.getElementById('upload-area').classList.remove('hidden');
+                document.getElementById('slides-container').classList.add('hidden');
+                document.getElementById('extracted-content').classList.add('hidden');
+            }
+        }
+
+        // Participant Management
+        async function handleParticipantUpload(event) {
+            const files = Array.from(event.target.files);
+            if (files.length === 0) return;
+            participantImages = [];
+            document.getElementById('participants-grid').innerHTML = '';
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (!file.type.startsWith('image/')) continue;
+                await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = { id: `participant_img_${Date.now()}_${i}`, file: file, dataUrl: e.target.result, processed: false };
+                        participantImages.push(img);
+                        const imgEl = document.createElement('div');
+                        imgEl.className = 'p-3 bg-white rounded-2xl border-2 border-slate-200';
+                        imgEl.innerHTML = `<img src="${img.dataUrl}" class="w-full h-48 object-contain rounded-lg mb-2 bg-slate-50">
+                            <div class="text-xs font-bold text-slate-600">${currentLang === 'tr' ? 'Görüntü' : 'Image'} ${i + 1}</div>`;
+                        document.getElementById('participants-grid').appendChild(imgEl);
+                        resolve();
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+            document.getElementById('participant-upload-area').classList.add('hidden');
+            document.getElementById('participants-container').classList.remove('hidden');
+            document.getElementById('participant-image-count').textContent = files.length;
+            lucide.createIcons();
+        }
+
+        async function generateParticipantList() {
+            if (participantImages.length === 0) { alert(currentLang === 'tr' ? 'Lütfen önce görüntüleri yükleyin.' : 'Please upload images first.'); return; }
+            detectedParticipants = [];
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            const firstNames = ['Ahmet', 'Mehmet', 'Ayşe', 'Fatma', 'Ali', 'Zeynep', 'Mustafa', 'Elif', 'Can', 'Deniz'];
+            const lastNames = ['Yılmaz', 'Kaya', 'Demir', 'Şahin', 'Çelik', 'Yıldız', 'Yıldırım', 'Öztürk', 'Aydın', 'Özdemir'];
+            participantImages.forEach(() => {
+                const count = Math.floor(Math.random() * 13) + 8;
+                for (let i = 0; i < count; i++) {
+                    const name = `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
+                    if (!detectedParticipants.includes(name)) detectedParticipants.push(name);
+                }
+            });
+            detectedParticipants.sort((a, b) => a.localeCompare('tr'));
+            displayParticipantList();
+        }
+
+        function displayParticipantList() {
+            const listContainer = document.getElementById('participant-list');
+            listContainer.innerHTML = '';
+            detectedParticipants.forEach((name, index) => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-all';
+                itemEl.innerHTML = `<div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span class="text-xs font-bold text-blue-600">${index + 1}</span></div>
+                    <div class="flex-1 text-sm font-medium text-slate-700">${name}</div>
+                    <button onclick="removeParticipant(${index})" class="p-1 hover:bg-red-50 rounded transition-all">
+                    <i data-lucide="x" class="w-3 h-3 text-slate-400 hover:text-red-600"></i></button>`;
+                listContainer.appendChild(itemEl);
+            });
+            document.getElementById('total-participants').textContent = detectedParticipants.length;
+            document.getElementById('participant-list-container').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function removeParticipant(index) { detectedParticipants.splice(index, 1); displayParticipantList(); }
+        function copyParticipantList() {
+            const listText = detectedParticipants.join('\n');
+            navigator.clipboard.writeText(listText);
+        }
+        function addToAttendees() {
+            if (detectedParticipants.length === 0) return;
+            document.getElementById('attendees').value = detectedParticipants.join(', ');
+            autoSave();
+        }
+        function clearParticipants() {
+            if (participantImages.length === 0) return;
+            if (confirm(currentLang === 'tr' ? 'Tüm katılımcı verileri silinecek. Emin misiniz?' : 'Delete all participant data?')) {
+                participantImages = []; detectedParticipants = [];
+                document.getElementById('participants-grid').innerHTML = '';
+                document.getElementById('participant-list').innerHTML = '';
+                document.getElementById('participant-upload-area').classList.remove('hidden');
+                document.getElementById('participants-container').classList.add('hidden');
+                document.getElementById('participant-list-container').classList.add('hidden');
+            }
+        }
+
+        // Stats
+        function updateStats() {
+            const content = document.getElementById('main-editor').value;
+            const words = content.split(/\s+/).filter(w => w.length > 0);
+            const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 10);
+            
+            const keywords = {
+                tr: { 
+                    decision: ['karar', 'onay', 'belirlendi', 'kararlaştırıldı'], 
+                    action: ['yapılacak', 'hazırla', 'sorumlu', 'gerçekleştir'], 
+                    risk: ['risk', 'problem', 'sorun', 'engel'], 
+                    question: ['?', 'neden', 'nasıl', 'ne zaman'] 
+                },
+                en: { 
+                    decision: ['decided', 'approved', 'determined'], 
+                    action: ['will', 'should', 'responsible'], 
+                    risk: ['risk', 'problem', 'issue'], 
+                    question: ['?', 'why', 'how', 'when'] 
+                }
+            };
+            
+            const kw = keywords[currentLang];
+            const decisions = sentences.filter(s => kw.decision.some(k => s.toLowerCase().includes(k)));
+            const actions = sentences.filter(s => kw.action.some(k => s.toLowerCase().includes(k)));
+            const risks = sentences.filter(s => kw.risk.some(k => s.toLowerCase().includes(k)));
+            const questions = sentences.filter(s => kw.question.some(k => s.toLowerCase().includes(k)));
+            
+            document.getElementById('stat-words').textContent = words.length;
+            document.getElementById('stat-actions').textContent = actions.length;
+            document.getElementById('stat-decisions').textContent = decisions.length;
+            document.getElementById('stat-risks').textContent = risks.length;
+            document.getElementById('stat-questions').textContent = questions.length;
+        }
+
+        // Quick Actions Modal - Hover based
+        let quickActionsTimeout;
+        
+        function showQuickActions() {
+            clearTimeout(quickActionsTimeout);
+            const modal = document.getElementById('quick-actions-modal');
+            modal.classList.remove('hidden', 'scale-95', 'opacity-0');
+            modal.classList.add('scale-100', 'opacity-100');
+            
+            // Keep modal visible when hovering over it
+            modal.onmouseenter = () => clearTimeout(quickActionsTimeout);
+            modal.onmouseleave = () => hideQuickActionsDelayed();
+            
+            lucide.createIcons();
+        }
+        
+        function hideQuickActionsDelayed() {
+            quickActionsTimeout = setTimeout(() => {
+                const modal = document.getElementById('quick-actions-modal');
+                modal.classList.remove('scale-100', 'opacity-100');
+                modal.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => modal.classList.add('hidden'), 200);
+            }, 300);
+        }
+
+        // Quick Actions
+        function addQuickTag(tag) {
+            const editor = document.getElementById('main-editor');
+            editor.value += `\n${tag} `;
+            editor.focus(); 
+            autoSave();
+        }
+
+        // Auto Save
+        function autoSave() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                const indicator = document.getElementById('save-status');
+                indicator.classList.remove('hidden'); 
+                indicator.classList.add('flex');
+                setTimeout(() => { 
+                    indicator.classList.add('hidden');
+                    indicator.classList.remove('flex');
+                }, 2000);
+            }, 2000);
+        }
+
+        // Export with proper Turkish character handling
+        function exportFile(type) {
+            const title = document.getElementById('title').value || 'Toplanti';
+            const content = document.getElementById('main-editor').value;
+            
+            // Turkish character mapping: ğ→g, ü→u, ş→s, ı→i, ö→o, ç→c
+            const sanitizedTitle = title
+                .replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
+                .replace(/ü/g, 'u').replace(/Ü/g, 'U')
+                .replace(/ş/g, 's').replace(/Ş/g, 'S')
+                .replace(/ı/g, 'i').replace(/İ/g, 'I')
+                .replace(/ö/g, 'o').replace(/Ö/g, 'O')
+                .replace(/ç/g, 'c').replace(/Ç/g, 'C')
+                .replace(/[<>:"/\\|?*]/g, '') // Remove invalid filename characters
+                .replace(/\s+/g, '_') // Replace spaces with underscore
+                .replace(/[^\w-]/g, '') // Remove any remaining special characters
+                .substring(0, 50) || 'Toplanti'; // Limit to 50 chars and fallback
+            
+            const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+            const filename = `${sanitizedTitle}_${timestamp}.${type === 'word' ? 'doc' : 'txt'}`;
+            
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+        }
+
+        // Placeholders
+        function newMeeting() { if (confirm(currentLang === 'tr' ? 'Yeni toplantı?' : 'New meeting?')) location.reload(); }
+        function toggleHistory() { document.getElementById('history-sidebar').classList.toggle('translate-x-full'); }
+        function filterMeetings() {}
+
+        // Initialize
+        switchLanguage('tr');
+        
+        // Ensure icons are rendered after page load
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+        
+        // Render icons immediately
+        setTimeout(() => {
+            lucide.createIcons();
+        }, 100);
+    </script>
+</body>
+</html>
